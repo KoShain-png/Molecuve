@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Molecuve — Modern Fashion</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a href="/" class="logo">MOLECUVE</a>
+    <div class="nav-links">
+      <a href="#products">Shop</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+    </div>
+    <button class="menu-btn" id="menuBtn">☰</button>
+  </nav>
+
+  <!-- MOBILE MENU -->
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#products" onclick="closeMobileMenu()">Shop</a>
+    <a href="#about" onclick="closeMobileMenu()">About</a>
+    <a href="#contact" onclick="closeMobileMenu()">Contact</a>
+  </div>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-content">
+      <span class="hero-tag">New Collection 2026</span>
+      <h1>Clean.<br>Minimal.<br>You.</h1>
+      <p>Clothes that speak quietly — and say everything.</p>
+      <a href="#products" class="btn-primary">Explore Collection</a>
+    </div>
+    <div class="hero-img">
+      <div class="hero-placeholder">
+        <span>MOLECUVE</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUCTS -->
+  <section id="products" class="products-section">
+    <div class="section-header">
+      <h2>Collection</h2>
+      <p>Curated pieces for every moment</p>
+    </div>
+
+    <!-- Filter -->
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="tops">Tops</button>
+      <button class="filter-btn" data-filter="bottoms">Bottoms</button>
+      <button class="filter-btn" data-filter="outerwear">Outerwear</button>
+    </div>
+
+    <!-- Loading / Error -->
+    <div id="loading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading collection...</p>
+    </div>
+    <div id="error" class="error-state" style="display:none">
+      <p>Could not load products. Please try again.</p>
+      <button onclick="loadProducts()" class="btn-outline">Retry</button>
+    </div>
+
+    <!-- Product Grid -->
+    <div class="products-grid" id="productsGrid"></div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about" class="about-section">
+    <div class="about-content">
+      <h2>About Molecuve</h2>
+      <p>We believe fashion should be effortless. Every piece in our collection is designed with simplicity at its core — clean lines, quality materials, and timeless style.</p>
+    </div>
+    <div class="about-stats">
+      <div class="stat">
+        <span class="stat-number">200+</span>
+        <span class="stat-label">Pieces</span>
+      </div>
+      <div class="stat">
+        <span class="stat-number">50k+</span>
+        <span class="stat-label">Customers</span>
+      </div>
+      <div class="stat">
+        <span class="stat-number">4.9</span>
+        <span class="stat-label">Rating</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact" class="contact-section">
+    <h2>Get in Touch</h2>
+    <p>Questions? We're here to help.</p>
+    <a href="mailto:hello@molecuve.com" class="btn-primary">hello@molecuve.com</a>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-top">
+      <span class="logo">MOLECUVE</span>
+      <div class="footer-links">
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="#">Shipping</a>
+        <a href="#">Returns</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 Molecuve. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- PRODUCT MODAL -->
+  <div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
+    <div class="modal" id="modal" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeModal()">×</button>
+      <div class="modal-img">
+        <img id="modalImg" src="" alt="" />
+      </div>
+      <div class="modal-info">
+        <h3 id="modalName"></h3>
+        <p class="modal-price" id="modalPrice"></p>
+        <p class="modal-category" id="modalCategory"></p>
+        <button class="btn-primary" style="width:100%;margin-top:1.5rem">Add to Cart</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
