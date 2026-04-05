@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Molecuve</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="admin-login" id="login-screen">
+  <div class="admin-login-box">
+    <div class="admin-login-logo">MOLECUVE</div>
+    <div class="admin-login-sub">Admin Panel</div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input class="form-input" type="password" id="admin-pass" placeholder="Enter admin password"
+        onkeydown="if(event.key==='Enter') doLogin()" />
+    </div>
+    <div id="login-msg"></div>
+    <button class="btn-primary" style="width:100%;margin-top:8px;" onclick="doLogin()">Login</button>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="admin-panel" style="display:none;">
+  <nav class="admin-nav">
+    <div class="admin-logo">MOLECUVE ADMIN</div>
+    <div class="admin-tabs">
+      <button class="admin-tab active" onclick="switchTab('products')">Products</button>
+      <button class="admin-tab" onclick="switchTab('orders')">Orders</button>
+    </div>
+    <button class="admin-logout" onclick="logout()">Logout</button>
+  </nav>
+
+  <div class="admin-content">
+
+    <!-- PRODUCTS TAB -->
+    <div class="admin-section active" id="tab-products">
+      <div class="admin-grid">
+        <!-- ADD / EDIT FORM -->
+        <div class="admin-panel">
+          <div class="admin-panel-title" id="form-title">Add New Product</div>
+          <div id="form-msg"></div>
+          <input type="hidden" id="edit-id" />
+          <div class="form-group">
+            <label class="form-label">Product Name *</label>
+            <input class="form-input" type="text" id="p-name" placeholder="Evening Wrap Dress" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Price (MMK) *</label>
+            <input class="form-input" type="number" id="p-price" placeholder="45000" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category *</label>
+            <select class="form-input" id="p-category">
+              <option value="Women">Women</option>
+              <option value="Men">Men</option>
+              <option value="Kids">Kids</option>
+              <option value="Accessories">Accessories</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea class="form-textarea" id="p-desc" placeholder="Product description..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Sizes (comma separated)</label>
+            <input class="form-input" type="text" id="p-sizes" value="XS,S,M,L,XL" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Colors (hex, comma separated)</label>
+            <input class="form-input" type="text" id="p-colors" value="#a8d5ba,#c3aed6,#a8c8e0" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Product Image</label>
+            <input class="form-input" type="file" id="p-image" accept="image/*" />
+            <div id="img-preview" style="margin-top:8px;"></div>
+          </div>
+          <div class="form-group" style="display:flex;align-items:center;gap:10px;">
+            <input type="checkbox" id="p-new" />
+            <label class="form-label" style="margin:0;">Mark as New Arrival</label>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:8px;">
+            <button class="btn-primary" onclick="saveProduct()" id="save-btn">Add Product</button>
+            <button class="btn-ghost" onclick="resetForm()" id="cancel-btn" style="display:none;">Cancel</button>
+          </div>
+        </div>
+
+        <!-- PRODUCT LIST -->
+        <div class="admin-panel">
+          <div class="admin-panel-title">All Products <span id="prod-count" style="color:var(--accent-mint);font-size:10px;"></span></div>
+          <div id="products-msg"></div>
+          <div style="overflow-x:auto;">
+            <table class="admin-table" id="products-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Category</th>
+                  <th>Price</th>
+                  <th>Stock</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="products-tbody">
+                <tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-soft);">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORDERS TAB -->
+    <div class="admin-section" id="tab-orders">
+      <div class="admin-panel" style="max-width:100%;">
+        <div class="admin-panel-title">All Orders <span id="order-count" style="color:var(--accent-mint);font-size:10px;"></span></div>
+        <div id="orders-msg"></div>
+        <div style="overflow-x:auto;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Customer</th>
+                <th>Phone</th>
+                <th>Address</th>
+                <th>Items</th>
+                <th>Total</th>
+                <th>Payment</th>
+                <th>Screenshot</th>
+                <th>Status</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="orders-tbody">
+              <tr><td colspan="10" style="text-align:center;padding:24px;color:var(--text-soft);">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast"></div>
+
+<script src="js/config.js"></script>
+<script>
+  let adminToken = localStorage.getItem('molecuve_admin');
+  let editingId = null;
+
+  if (adminToken) checkAndShow();
+
+  async function doLogin() {
+    const pass = document.getElementById('admin-pass').value;
+    const msgEl = document.getElementById('login-msg');
+    if (!pass) { msgEl.innerHTML = '<div class="msg error">Enter password.</div>'; return; }
+    try {
+      const res = await api.post('/api/admin/login', { password: pass });
+      if (res.success) {
+        adminToken = res.token;
+        localStorage.setItem('molecuve_admin', adminToken);
+        showPanel();
+      } else {
+        msgEl.innerHTML = '<div class="msg error">Wrong password.</div>';
+      }
+    } catch {
+      msgEl.innerHTML = '<div class="msg error">Cannot connect to server.</div>';
+    }
+  }
+
+  async function checkAndShow() {
+    try {
+      const res = await api.post('/api/admin/verify', { token: adminToken });
+      if (res.success) showPanel();
+      else { localStorage.removeItem('molecuve_admin'); adminToken = null; }
+    } catch { /* stay on login */ }
+  }
+
+  function showPanel() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-panel').style.display = 'block';
+    loadProducts();
+    loadOrders();
+  }
+
+  function logout() {
+    localStorage.removeItem('molecuve_admin');
+    location.reload();
+  }
+
+  function switchTab(tab) {
+    document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  // ── PRODUCTS ──────────────────────────────────────────
+  async function loadProducts() {
+    try {
+      const res = await api.get('/api/products');
+      const products = res.data || [];
+      document.getElementById('prod-count').textContent = `(${products.length})`;
+      const tbody = document.getElementById('products-tbody');
+      if (products.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-soft);">No products yet. Add your first product!</td></tr>';
+        return;
+      }
+      tbody.innerHTML = products.map(p => `
+        <tr>
+          <td style="display:flex;align-items:center;gap:10px;">
+            ${p.image_url ? `<img src="${imgSrc(p.image_url)}" style="width:40px;height:50px;object-fit:cover;">` : '<div style="width:40px;height:50px;background:var(--sky);display:flex;align-items:center;justify-content:center;font-size:18px;">👗</div>'}
+            <span>${p.name}${p.is_new ? ' <span class="badge-new">New</span>' : ''}</span>
+          </td>
+          <td>${p.category}</td>
+          <td>${formatPrice(p.price)}</td>
+          <td>${p.in_stock ? '<span class="badge-confirmed">In Stock</span>' : '<span class="badge-cancelled">Out</span>'}</td>
+          <td>
+            <button class="action-btn" onclick="editProduct(${p.id})">Edit</button>
+            <button class="action-btn delete" onclick="deleteProduct(${p.id}, '${p.name}')">Delete</button>
+          </td>
+        </tr>`).join('');
+    } catch {
+      document.getElementById('products-tbody').innerHTML = '<tr><td colspan="5">Error loading products.</td></tr>';
+    }
+  }
+
+  async function saveProduct() {
+    const name = document.getElementById('p-name').value.trim();
+    const price = document.getElementById('p-price').value;
+    const category = document.getElementById('p-category').value;
+    const desc = document.getElementById('p-desc').value.trim();
+    const sizes = document.getElementById('p-sizes').value.trim();
+    const colors = document.getElementById('p-colors').value.trim();
+    const isNew = document.getElementById('p-new').checked;
+    const imageFile = document.getElementById('p-image').files[0];
+    const msgEl = document.getElementById('form-msg');
+
+    if (!name || !price) { msgEl.innerHTML = '<div class="msg error">Name and price are required.</div>'; return; }
+
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('price', price);
+    formData.append('category', category);
+    formData.append('description', desc);
+    formData.append('sizes', sizes);
+    formData.append('colors', colors);
+    formData.append('is_new', isNew);
+    if (imageFile) formData.append('image', imageFile);
+
+    document.getElementById('save-btn').textContent = 'Saving...';
+    try {
+      let res;
+      if (editingId) {
+        res = await api.putForm(`/api/products/${editingId}`, formData);
+      } else {
+        res = await api.postForm('/api/products', formData);
+      }
+      if (res.success) {
+        msgEl.innerHTML = `<div class="msg success">${editingId ? 'Product updated!' : 'Product added!'}</div>`;
+        resetForm();
+        loadProducts();
+        setTimeout(() => msgEl.innerHTML = '', 3000);
+      } else {
+        msgEl.innerHTML = `<div class="msg error">${res.message}</div>`;
+      }
+    } catch {
+      msgEl.innerHTML = '<div class="msg error">Error saving product.</div>';
+    }
+    document.getElementById('save-btn').textContent = editingId ? 'Update Product' : 'Add Product';
+  }
+
+  async function editProduct(id) {
+    try {
+      const res = await api.get(`/api/products/${id}`);
+      const p = res.data;
+      editingId = id;
+      document.getElementById('edit-id').value = id;
+      document.getElementById('p-name').value = p.name;
+      document.getElementById('p-price').value = p.price;
+      document.getElementById('p-category').value = p.category;
+      document.getElementById('p-desc').value = p.description || '';
+      document.getElementById('p-sizes').value = p.sizes || 'XS,S,M,L,XL';
+      document.getElementById('p-colors').value = p.colors || '#a8d5ba,#c3aed6,#a8c8e0';
+      document.getElementById('p-new').checked = p.is_new;
+      if (p.image_url) {
+        document.getElementById('img-preview').innerHTML = `<img src="${imgSrc(p.image_url)}" style="width:80px;height:100px;object-fit:cover;">`;
+      }
+      document.getElementById('form-title').textContent = 'Edit Product';
+      document.getElementById('save-btn').textContent = 'Update Product';
+      document.getElementById('cancel-btn').style.display = 'inline-block';
+      window.scrollTo(0, 0);
+    } catch { showToast('Error loading product.'); }
+  }
+
+  async function deleteProduct(id, name) {
+    if (!confirm(`Delete "${name}"?`)) return;
+    try {
+      const res = await api.delete(`/api/products/${id}`);
+      if (res.success) { showToast('Product deleted.'); loadProducts(); }
+    } catch { showToast('Error deleting.'); }
+  }
+
+  function resetForm() {
+    editingId = null;
+    document.getElementById('p-name').value = '';
+    document.getElementById('p-price').value = '';
+    document.getElementById('p-category').value = 'Women';
+    document.getElementById('p-desc').value = '';
+    document.getElementById('p-sizes').value = 'XS,S,M,L,XL';
+    document.getElementById('p-colors').value = '#a8d5ba,#c3aed6,#a8c8e0';
+    document.getElementById('p-new').checked = false;
+    document.getElementById('p-image').value = '';
+    document.getElementById('img-preview').innerHTML = '';
+    document.getElementById('form-title').textContent = 'Add New Product';
+    document.getElementById('save-btn').textContent = 'Add Product';
+    document.getElementById('cancel-btn').style.display = 'none';
+    document.getElementById('form-msg').innerHTML = '';
+  }
+
+  // ── ORDERS ────────────────────────────────────────────
+  async function loadOrders() {
+    try {
+      const res = await api.get('/api/orders');
+      const orders = res.data || [];
+      document.getElementById('order-count').textContent = `(${orders.length})`;
+      const tbody = document.getElementById('orders-tbody');
+      if (orders.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--text-soft);">No orders yet.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = orders.map(o => {
+        const items = Array.isArray(o.items) ? o.items : [];
+        const itemSummary = items.map(i => `${i.name} ×${i.qty}`).join(', ');
+        const date = new Date(o.created_at).toLocaleDateString('en-GB');
+        return `<tr>
+          <td>#${o.id}</td>
+          <td>${o.customer_name}</td>
+          <td>${o.customer_phone}</td>
+          <td style="max-width:140px;font-size:11px;">${o.delivery_address}</td>
+          <td style="max-width:160px;font-size:11px;">${itemSummary}</td>
+          <td>${formatPrice(o.total_amount)}</td>
+          <td>${o.payment_method}</td>
+          <td>${o.payment_screenshot
+            ? `<a href="${imgSrc(o.payment_screenshot)}" target="_blank" style="color:var(--accent-sky);font-size:11px;">View</a>`
+            : '—'}</td>
+          <td>
+            <select class="status-select" onchange="updateOrderStatus(${o.id}, this.value)">
+              ${['pending','confirmed','shipped','delivered','cancelled'].map(s =>
+                `<option value="${s}" ${s === o.status ? 'selected' : ''}>${s.charAt(0).toUpperCase()+s.slice(1)}</option>`
+              ).join('')}
+            </select>
+          </td>
+          <td style="font-size:11px;">${date}</td>
+        </tr>`;
+      }).join('');
+    } catch {
+      document.getElementById('orders-tbody').innerHTML = '<tr><td colspan="10">Error loading orders.</td></tr>';
+    }
+  }
+
+  async function updateOrderStatus(id, status) {
+    try {
+      const res = await api.put(`/api/orders/${id}`, { status });
+      if (res.success) showToast('Status updated!');
+      else showToast('Error updating status.');
+    } catch { showToast('Error updating status.'); }
+  }
+
+  // Image preview on file select
+  document.addEventListener('DOMContentLoaded', () => {
+    const imgInput = document.getElementById('p-image');
+    if (imgInput) {
+      imgInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+          document.getElementById('img-preview').innerHTML =
+            `<img src="${e.target.result}" style="width:80px;height:100px;object-fit:cover;margin-top:8px;">`;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Molecuve — Fashion Store</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo" onclick="location.href='index.html'">MOLECUVE</div>
+  <div class="nav-links">
+    <a href="products.html">Collection</a>
+    <a href="#about">About</a>
+    <a href="#contact">Contact</a>
+  </div>
+  <button class="cart-btn" id="cart-count" onclick="openCart()">Cart (0)</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-eyebrow">New Collection — 2025</div>
+    <h1 class="hero-title">Dressed in<br><em>quiet luxury</em></h1>
+    <p class="hero-sub">Curated fashion for every occasion. Timeless pieces crafted with intention — from everyday elegance to evening refinement.</p>
+    <div class="hero-actions">
+      <button class="btn-primary" onclick="location.href='products.html'">Shop Collection</button>
+      <button class="btn-ghost" onclick="document.getElementById('about').scrollIntoView({behavior:'smooth'})">Our Story</button>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-blob"></div>
+    <div class="hero-blob2"></div>
+    <div class="hero-card">
+      <div class="hero-card-img" id="hero-img">👗</div>
+      <div class="hero-card-name" id="hero-name">Evening Wrap Dress</div>
+      <div class="hero-card-price" id="hero-price">55,000 MMK</div>
+      <div class="hero-badge">New</div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-inner">
+    <span class="ticker-item">Women's Wear</span><span class="ticker-dot">✦</span>
+    <span class="ticker-item">Men's Collection</span><span class="ticker-dot">✦</span>
+    <span class="ticker-item">Kids Fashion</span><span class="ticker-dot">✦</span>
+    <span class="ticker-item">Accessories</span><span class="ticker-dot">✦</span>
+    <span class="ticker-item">New Arrivals</span><span class="ticker-dot">✦</span>
+    <span class="ticker-item">Free Delivery Available</span><span class="ticker-dot">✦</span>
+    <span class="ticker-item">Women's Wear</span><span class="ticker-dot">✦</span>
+    <span class="ticker-item">Men's Collection</span><span class="ticker-dot">✦</span>
+    <span class="ticker-item">Kids Fashion</span><span class="ticker-dot">✦</span>
+    <span class="ticker-item">Accessories</span><span class="ticker-dot">✦</span>
+    <span class="ticker-item">New Arrivals</span><span class="ticker-dot">✦</span>
+    <span class="ticker-item">Free Delivery Available</span><span class="ticker-dot">✦</span>
+  </div>
+</div>
+
+<!-- FEATURED PRODUCTS -->
+<div class="section-header">
+  <span class="section-title">Featured pieces</span>
+  <a class="section-link" href="products.html">View all →</a>
+</div>
+<div class="product-grid" id="featured-grid">
+  <div class="loading">Loading products...</div>
+</div>
+
+<!-- CATEGORIES -->
+<div class="section-header" style="padding-top:36px;">
+  <span class="section-title">Shop by category</span>
+</div>
+<div class="category-grid">
+  <div class="category-card women" onclick="location.href='products.html?cat=women'">
+    <div><div class="category-name">Women</div><div class="category-count">Browse collection</div></div>
+    <div class="category-arrow">→</div>
+  </div>
+  <div class="category-card men" onclick="location.href='products.html?cat=men'">
+    <div><div class="category-name">Men</div><div class="category-count">Browse collection</div></div>
+    <div class="category-arrow">→</div>
+  </div>
+  <div class="category-card kids" onclick="location.href='products.html?cat=kids'">
+    <div><div class="category-name">Kids</div><div class="category-count">Browse collection</div></div>
+    <div class="category-arrow">→</div>
+  </div>
+</div>
+
+<!-- TRUST BAR -->
+<div class="trust-bar">
+  <div class="trust-item">
+    <div class="trust-title">Free Delivery</div>
+    <div class="trust-sub">On all orders</div>
+  </div>
+  <div class="trust-item">
+    <div class="trust-title">Easy Returns</div>
+    <div class="trust-sub">Within 7 days</div>
+  </div>
+  <div class="trust-item">
+    <div class="trust-title">Secure Payment</div>
+    <div class="trust-sub">KBZPay · Wave · AYA</div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<div id="about" class="info-strip">
+  <div class="info-block">
+    <div class="info-label">Visit our store</div>
+    <div class="info-value">
+      <strong>No. 12, Pyay Road</strong><br>
+      Kamayut Township, Yangon
+    </div>
+  </div>
+  <div class="info-block">
+    <div class="info-label">Opening hours</div>
+    <div class="info-value">
+      <strong>Mon – Sat</strong> &nbsp;9:00 am – 7:00 pm<br>
+      <strong>Sunday</strong> &nbsp;Closed
+    </div>
+  </div>
+</div>
+
+<!-- CONTACT -->
+<div id="contact" class="contact-bar">
+  <span class="contact-label">Get in touch</span>
+  <div class="contact-links">
+    <span class="contact-item">09 xxx xxx xxx</span>
+    <span class="contact-item">molecuve@gmail.com</span>
+  </div>
+</div>
+
+<footer>
+  <span>© 2025 Molecuve</span>
+  <span class="footer-logo">MOLECUVE</span>
+  <span>Yangon, Myanmar</span>
+</footer>
+
+<!-- CART SIDEBAR -->
+<div class="cart-overlay" id="cart-overlay" onclick="closeCart()"></div>
+<div class="cart-sidebar" id="cart-sidebar">
+  <div class="cart-header">
+    <span class="cart-title">Your Cart</span>
+    <button class="cart-close" onclick="closeCart()">×</button>
+  </div>
+  <div class="cart-items" id="cart-items-list"></div>
+  <div class="cart-footer" id="cart-footer" style="display:none;">
+    <div class="cart-total">
+      <span>Total</span>
+      <span id="cart-total-price">0 MMK</span>
+    </div>
+    <button class="checkout-btn" onclick="location.href='checkout.html'">Proceed to Checkout</button>
+  </div>
+</div>
+
+<div class="toast"></div>
+
+<script src="js/config.js"></script>
+<script>
+  cart.updateCount();
+
+  async function loadFeatured() {
+    try {
+      const res = await api.get('/api/products');
+      const grid = document.getElementById('featured-grid');
+      grid.innerHTML = '';
+      if (!res.data || res.data.length === 0) {
+        grid.innerHTML = '<div class="loading">No products yet.</div>';
+        return;
+      }
+      const featured = res.data.slice(0, 4);
+      // update hero with first product
+      if (featured[0]) {
+        const p = featured[0];
+        const heroImg = document.getElementById('hero-img');
+        if (p.image_url) {
+          heroImg.innerHTML = `<img src="${imgSrc(p.image_url)}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;">`;
+        }
+        document.getElementById('hero-name').textContent = p.name;
+        document.getElementById('hero-price').textContent = formatPrice(p.price);
+      }
+      featured.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.onclick = () => location.href = `product.html?id=${p.id}`;
+        const bgClass = { Women: 'bg-w', Men: 'bg-m', Kids: 'bg-k', Accessories: 'bg-a' }[p.category] || 'bg-w';
+        card.innerHTML = `
+          <div class="product-img ${bgClass}">
+            ${p.image_url ? `<img src="${imgSrc(p.image_url)}" alt="${p.name}">` : '👗'}
+          </div>
+          <div class="product-info">
+            ${p.is_new ? '<span class="badge-new">New</span><br>' : ''}
+            <div class="product-tag">${p.category}</div>
+            <div class="product-name">${p.name}</div>
+            <div class="product-price">${formatPrice(p.price)}</div>
+          </div>`;
+        grid.appendChild(card);
+      });
+    } catch (e) {
+      document.getElementById('featured-grid').innerHTML = '<div class="loading">Could not load products.</div>';
+    }
+  }
+
+  function openCart() {
+    document.getElementById('cart-overlay').classList.add('open');
+    document.getElementById('cart-sidebar').classList.add('open');
+    renderCartSidebar();
+  }
+  function closeCart() {
+    document.getElementById('cart-overlay').classList.remove('open');
+    document.getElementById('cart-sidebar').classList.remove('open');
+  }
+  function renderCartSidebar() {
+    const list = document.getElementById('cart-items-list');
+    const footer = document.getElementById('cart-footer');
+    if (cart.items.length === 0) {
+      list.innerHTML = '<div class="cart-empty">Your cart is empty.</div>';
+      footer.style.display = 'none';
+      return;
+    }
+    footer.style.display = 'block';
+    list.innerHTML = cart.items.map(i => `
+      <div class="cart-item">
+        <div class="cart-item-img">
+          ${i.product.image_url ? `<img src="${imgSrc(i.product.image_url)}" alt="${i.product.name}">` : '👗'}
+        </div>
+        <div class="cart-item-info">
+          <div class="cart-item-name">${i.product.name}</div>
+          <div class="cart-item-meta">Size: ${i.size} · Qty: ${i.qty}</div>
+          <div class="cart-item-price">${formatPrice(i.product.price * i.qty)}</div>
+        </div>
+        <button class="cart-item-remove" onclick="removeFromCart('${i.key}')">×</button>
+      </div>`).join('');
+    document.getElementById('cart-total-price').textContent = formatPrice(cart.total());
+  }
+  function removeFromCart(key) {
+    cart.remove(key);
+    renderCartSidebar();
+  }
+
+  loadFeatured();
+</script>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product — Molecuve</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo" onclick="location.href='index.html'">MOLECUVE</div>
+  <div class="nav-links">
+    <a href="products.html">Collection</a>
+    <a href="index.html#about">About</a>
+    <a href="index.html#contact">Contact</a>
+  </div>
+  <button class="cart-btn" id="cart-count" onclick="openCart()">Cart (0)</button>
+</nav>
+
+<div id="detail-container">
+  <div class="loading">Loading product...</div>
+</div>
+
+<!-- CART SIDEBAR -->
+<div class="cart-overlay" id="cart-overlay" onclick="closeCart()"></div>
+<div class="cart-sidebar" id="cart-sidebar">
+  <div class="cart-header">
+    <span class="cart-title">Your Cart</span>
+    <button class="cart-close" onclick="closeCart()">×</button>
+  </div>
+  <div class="cart-items" id="cart-items-list"></div>
+  <div class="cart-footer" id="cart-footer" style="display:none;">
+    <div class="cart-total"><span>Total</span><span id="cart-total-price">0 MMK</span></div>
+    <button class="checkout-btn" onclick="location.href='checkout.html'">Proceed to Checkout</button>
+  </div>
+</div>
+
+<div class="toast"></div>
+
+<script src="js/config.js"></script>
+<script>
+  let product = null;
+  let selectedSize = '';
+  let selectedColor = '';
+  cart.updateCount();
+
+  const productId = new URLSearchParams(location.search).get('id');
+
+  async function loadProduct() {
+    if (!productId) { location.href = 'products.html'; return; }
+    try {
+      const res = await api.get(`/api/products/${productId}`);
+      product = res.data;
+      document.title = product.name + ' — Molecuve';
+      renderDetail();
+    } catch (e) {
+      document.getElementById('detail-container').innerHTML = '<div class="loading">Product not found.</div>';
+    }
+  }
+
+  function renderDetail() {
+    const sizes = (product.sizes || 'XS,S,M,L,XL').split(',').map(s => s.trim());
+    const colors = (product.colors || '#a8d5ba,#c3aed6,#a8c8e0').split(',').map(c => c.trim());
+    selectedSize = sizes[0];
+    selectedColor = colors[0];
+
+    const bgClass = { Women: 'bg-w', Men: 'bg-m', Kids: 'bg-k', Accessories: 'bg-a' }[product.category] || 'bg-w';
+
+    document.getElementById('detail-container').innerHTML = `
+      <div class="detail-layout">
+        <div class="detail-images">
+          <div class="detail-main-img ${bgClass}" id="main-img-wrap">
+            ${product.image_url
+              ? `<img src="${imgSrc(product.image_url)}" alt="${product.name}">`
+              : '👗'}
+          </div>
+          <div class="detail-thumbs">
+            <div class="detail-thumb active">${product.image_url ? `<img src="${imgSrc(product.image_url)}" alt="">` : '👗'}</div>
+            <div class="detail-thumb">${product.image_url ? `<img src="${imgSrc(product.image_url)}" alt="">` : '👗'}</div>
+            <div class="detail-thumb">${product.image_url ? `<img src="${imgSrc(product.image_url)}" alt="">` : '👗'}</div>
+          </div>
+        </div>
+        <div class="detail-info">
+          <button class="back-link" onclick="history.back()">← Back to collection</button>
+          <div>
+            <div class="detail-cat">${product.category}</div>
+            <div class="detail-name">${product.name}</div>
+          </div>
+          <div class="detail-price">${formatPrice(product.price)}</div>
+          <hr class="detail-divider">
+          <div>
+            <div class="option-label">Select size</div>
+            <div class="size-options" id="size-options">
+              ${sizes.map((s, i) => `
+                <button class="size-btn ${i === 0 ? 'active' : ''}" onclick="selectSize(this, '${s}')">${s}</button>
+              `).join('')}
+            </div>
+          </div>
+          <div>
+            <div class="option-label">Color</div>
+            <div class="color-options" id="color-options">
+              ${colors.map((c, i) => `
+                <div class="color-btn ${i === 0 ? 'active' : ''}" style="background:${c};" onclick="selectColor(this, '${c}')"></div>
+              `).join('')}
+            </div>
+          </div>
+          <div class="detail-desc">${product.description || 'A beautifully crafted piece from the Molecuve collection.'}</div>
+          <hr class="detail-divider">
+          <div class="btn-group" style="display:flex;flex-direction:column;gap:10px;">
+            <button class="add-to-cart-btn" id="add-btn" onclick="handleAddToCart()">Add to Cart</button>
+            <button class="wishlist-btn">Save to Wishlist</button>
+          </div>
+          <div class="detail-meta">
+            <span>Free delivery</span>
+            <span>·</span>
+            <span>Returns within 7 days</span>
+            <span>·</span>
+            <span>${product.in_stock ? 'In stock' : 'Out of stock'}</span>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function selectSize(el, size) {
+    document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    selectedSize = size;
+  }
+
+  function selectColor(el, color) {
+    document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    selectedColor = color;
+  }
+
+  function handleAddToCart() {
+    if (!product) return;
+    cart.add(product, selectedSize, selectedColor);
+    const btn = document.getElementById('add-btn');
+    btn.textContent = 'Added!';
+    setTimeout(() => btn.textContent = 'Add to Cart', 1500);
+    openCart();
+  }
+
+  function openCart() {
+    document.getElementById('cart-overlay').classList.add('open');
+    document.getElementById('cart-sidebar').classList.add('open');
+    renderCartSidebar();
+  }
+  function closeCart() {
+    document.getElementById('cart-overlay').classList.remove('open');
+    document.getElementById('cart-sidebar').classList.remove('open');
+  }
+  function renderCartSidebar() {
+    const list = document.getElementById('cart-items-list');
+    const footer = document.getElementById('cart-footer');
+    if (cart.items.length === 0) {
+      list.innerHTML = '<div class="cart-empty">Your cart is empty.</div>';
+      footer.style.display = 'none'; return;
+    }
+    footer.style.display = 'block';
+    list.innerHTML = cart.items.map(i => `
+      <div class="cart-item">
+        <div class="cart-item-img">${i.product.image_url ? `<img src="${imgSrc(i.product.image_url)}" alt="">` : '👗'}</div>
+        <div class="cart-item-info">
+          <div class="cart-item-name">${i.product.name}</div>
+          <div class="cart-item-meta">Size: ${i.size} · Qty: ${i.qty}</div>
+          <div class="cart-item-price">${formatPrice(i.product.price * i.qty)}</div>
+        </div>
+        <button class="cart-item-remove" onclick="removeFromCart('${i.key}')">×</button>
+      </div>`).join('');
+    document.getElementById('cart-total-price').textContent = formatPrice(cart.total());
+  }
+  function removeFromCart(key) { cart.remove(key); renderCartSidebar(); }
+
+  loadProduct();
+</script>
+</body>
+</html>

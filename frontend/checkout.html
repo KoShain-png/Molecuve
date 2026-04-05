@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkout — Molecuve</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo" onclick="location.href='index.html'">MOLECUVE</div>
+  <div class="nav-links">
+    <a href="products.html">Collection</a>
+  </div>
+  <button class="cart-btn" id="cart-count">Cart (0)</button>
+</nav>
+
+<div class="checkout-layout" id="checkout-main">
+  <!-- FORM -->
+  <div class="checkout-form-col">
+    <div class="checkout-heading">Delivery Information</div>
+
+    <div class="form-group">
+      <label class="form-label">Full Name *</label>
+      <input class="form-input" type="text" id="cust-name" placeholder="Ma Aye Chan" required />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Phone Number *</label>
+      <input class="form-input" type="tel" id="cust-phone" placeholder="09 xxx xxx xxx" required />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Delivery Address *</label>
+      <input class="form-input" type="text" id="cust-address" placeholder="No. XX, Street Name, Township, City" required />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Order Notes (optional)</label>
+      <textarea class="form-textarea" id="cust-notes" placeholder="Any special requests or notes..."></textarea>
+    </div>
+
+    <hr class="detail-divider" style="margin:24px 0;">
+    <div class="checkout-heading">Payment Method</div>
+
+    <div class="payment-options" id="payment-options">
+      <div class="payment-option selected" data-method="KBZPay">
+        <div class="payment-name">KBZPay</div>
+        <div class="payment-number" id="num-KBZPay">09 xxx xxx xxx</div>
+      </div>
+      <div class="payment-option" data-method="Wave Money">
+        <div class="payment-name">Wave Money</div>
+        <div class="payment-number" id="num-Wave Money">09 xxx xxx xxx</div>
+      </div>
+      <div class="payment-option" data-method="AYAPay">
+        <div class="payment-name">AYAPay</div>
+        <div class="payment-number" id="num-AYAPay">09 xxx xxx xxx</div>
+      </div>
+    </div>
+
+    <div class="checkout-heading" style="margin-top:24px;">Payment Screenshot *</div>
+    <div class="upload-area" onclick="document.getElementById('screenshot-input').click()">
+      <input type="file" id="screenshot-input" accept="image/*" style="display:none" onchange="previewScreenshot(this)" />
+      <label class="upload-label">
+        Click to upload payment screenshot<br>
+        <span>Browse file</span>
+      </label>
+      <div class="upload-preview" id="upload-preview"></div>
+    </div>
+
+    <div id="checkout-msg"></div>
+    <button class="place-order-btn" onclick="placeOrder()">Place Order</button>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="checkout-summary-col">
+    <div class="checkout-heading">Order Summary</div>
+    <div id="order-items"></div>
+    <hr class="detail-divider" style="margin:16px 0;">
+    <div class="summary-total">
+      <span>Total</span>
+      <span id="order-total">0 MMK</span>
+    </div>
+  </div>
+</div>
+
+<div class="toast"></div>
+
+<script src="js/config.js"></script>
+<script>
+  cart.updateCount();
+  let selectedPayment = 'KBZPay';
+
+  function renderSummary() {
+    if (cart.items.length === 0) {
+      location.href = 'products.html';
+      return;
+    }
+    const container = document.getElementById('order-items');
+    container.innerHTML = cart.items.map(i => `
+      <div class="summary-item">
+        <span class="summary-item-name">${i.product.name} × ${i.qty} <br>
+          <small style="color:var(--text-soft);font-size:10px;">Size: ${i.size}</small>
+        </span>
+        <span class="summary-item-price">${formatPrice(i.product.price * i.qty)}</span>
+      </div>`).join('');
+    document.getElementById('order-total').textContent = formatPrice(cart.total());
+
+    // Fill payment numbers from config
+    Object.entries(CONFIG.PAYMENT_INFO).forEach(([method, info]) => {
+      const el = document.getElementById('num-' + method);
+      if (el) el.textContent = info.number;
+    });
+  }
+
+  // Payment selection
+  document.getElementById('payment-options').addEventListener('click', e => {
+    const opt = e.target.closest('.payment-option');
+    if (!opt) return;
+    document.querySelectorAll('.payment-option').forEach(o => o.classList.remove('selected'));
+    opt.classList.add('selected');
+    selectedPayment = opt.dataset.method;
+  });
+
+  function previewScreenshot(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      document.getElementById('upload-preview').innerHTML =
+        `<img src="${e.target.result}" style="width:100%;border-radius:4px;margin-top:8px;">`;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function placeOrder() {
+    const name = document.getElementById('cust-name').value.trim();
+    const phone = document.getElementById('cust-phone').value.trim();
+    const address = document.getElementById('cust-address').value.trim();
+    const notes = document.getElementById('cust-notes').value.trim();
+    const screenshot = document.getElementById('screenshot-input').files[0];
+    const msgEl = document.getElementById('checkout-msg');
+
+    if (!name || !phone || !address) {
+      msgEl.innerHTML = '<div class="msg error">Please fill in all required fields.</div>';
+      return;
+    }
+    if (!screenshot) {
+      msgEl.innerHTML = '<div class="msg error">Please upload your payment screenshot.</div>';
+      return;
+    }
+
+    const btn = document.querySelector('.place-order-btn');
+    btn.textContent = 'Placing order...';
+    btn.disabled = true;
+
+    try {
+      const formData = new FormData();
+      formData.append('customer_name', name);
+      formData.append('customer_phone', phone);
+      formData.append('delivery_address', address);
+      formData.append('payment_method', selectedPayment);
+      formData.append('total_amount', cart.total());
+      formData.append('items', JSON.stringify(cart.items.map(i => ({
+        product_id: i.product.id,
+        name: i.product.name,
+        price: i.product.price,
+        qty: i.qty,
+        size: i.size,
+        color: i.color
+      }))));
+      if (notes) formData.append('notes', notes);
+      formData.append('payment_screenshot', screenshot);
+
+      const res = await api.postForm('/api/orders', formData);
+
+      if (res.success) {
+        cart.clear();
+        document.getElementById('checkout-main').innerHTML = `
+          <div class="order-success" style="grid-column:1/-1;">
+            <h2>Order Placed!</h2>
+            <p>Thank you, <strong>${name}</strong>.<br>
+            We'll confirm your order after verifying your payment.<br>
+            We'll contact you at <strong>${phone}</strong> soon.</p>
+            <br>
+            <button class="btn-primary" onclick="location.href='index.html'">Continue Shopping</button>
+          </div>`;
+      } else {
+        msgEl.innerHTML = `<div class="msg error">${res.message || 'Something went wrong.'}</div>`;
+        btn.textContent = 'Place Order';
+        btn.disabled = false;
+      }
+    } catch (e) {
+      msgEl.innerHTML = '<div class="msg error">Network error. Please try again.</div>';
+      btn.textContent = 'Place Order';
+      btn.disabled = false;
+    }
+  }
+
+  renderSummary();
+</script>
+</body>
+</html>
